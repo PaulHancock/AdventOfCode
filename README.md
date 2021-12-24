@@ -1,4 +1,4 @@
-OB# My Personal collection of [Advent of Code] solutions
+OBOB# My Personal collection of [Advent of Code] solutions
 
 :christmas_tree::santa::christmas_tree:
 
@@ -28,7 +28,7 @@ AoC so far:
 | 19 | :question: | :question:  |
 | [20](2021/Day20) | :star: | :star:  |
 | [21](2021/Day21) | :star: | :question:  |
-| 22 | :question: | :question:  |
+| [22](2021/Day22) | :star: | :question:  |
 | 23 | :question: | :question:  |
 | 24 | :question: | :question:  |
 | 25 | :question: | :question:  |
