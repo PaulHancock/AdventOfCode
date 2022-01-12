@@ -1,4 +1,4 @@
-OBOB# My Personal collection of [Advent of Code] solutions
+# My Personal collection of [Advent of Code] solutions
 
 :christmas_tree::santa::christmas_tree:
 
