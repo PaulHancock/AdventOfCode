@@ -50,32 +50,20 @@ Find the top three Elves carrying the most Calories. How many Calories are those
 
 def part1(data):
     best_cals = 0
-
     this_cals = 0
+
     for line in data:
-        l = line.strip()
+        l = line.strip() # Ignore trailing \n
         if len(l)>0:
             this_cals += int(l)
         else:
             best_cals = max(this_cals, best_cals)
             this_cals = 0
+    # include the last elf!
+    best_cals = max(this_cals, best_cals)
 
     return best_cals
 
-def part2(data):
-    elf_cals=[]
-
-    this_cals = 0
-    for line in data:
-        l = line.strip()
-        if len(l)>0:
-            this_cals += int(l)
-        else:
-            elf_cals.append(this_cals)
-            this_cals = 0
-
-    top3 = sorted(elf_cals)[:3]
-    return top3
 
 def test_part1():
     test_data = open('test1.txt').readlines()
@@ -83,13 +71,48 @@ def test_part1():
     if result != 24000:
         raise AssertionError(f"Test failed {result} != 24000")
     else:
-        print("passed test")
+        print("Test PASS")
+    return True
+
+
+def part2(data):
+    elf_cals=[]
+
+    this_cals = 0
+    for line in data:
+        l = line.strip() # Ignore trailing \n
+        if len(l)>0:
+            this_cals += int(l)
+        else:
+            elf_cals.append(this_cals)
+            this_cals = 0
+    # include the last elf!
+    elf_cals.append(this_cals)
+
+    top3 = sorted(elf_cals)[-3:]
+    return sum(top3)
+
+
+def test_part2():
+    test_data = open('test1.txt').readlines()
+    result = part2(test_data)
+    answer = 45000
+    if result != answer:
+        raise AssertionError(f"Test failed {result} != {answer}")
+    else:
+        print("Test PASS")
     return True
 
 def main():
+    print("-- Part 1 --")
     if test_part1():
         data = open('part1.txt').readlines()
         print(f"The elf with the most calories has {part1(data)} calories")
+        
+    print("-- Part 1 --")
+    if test_part2():
+        data = open('part1.txt').readlines()
+        print(f"The top three elves together have {part2(data)} calories")
 
     return
 
