@@ -52,13 +52,78 @@ What would your total score be if everything goes exactly according to your
 strategy guide?
 """
 
+SYMBOLS = 'rps'
+
+class throw():
+    """
+    Rules of rock paper scissors:
+    rock beats scissors
+    scissors beats paper
+    paper beats rock
+    """
+
+    def __init__(self, rps):
+        if rps.lower() not in SYMBOLS:
+            raise AssertionError(f"rps must be one of {SYMBOLS}")
+        self.choice = rps.lower()
+        self.value = SYMBOLS.index(self.choice) + 1 
+    
+    def __repr__(self):
+        if self.choice=='r':
+            return 'Rock'
+        if self.choice =='s':
+            return 'Scissors'
+        if self.choice =='p':
+            return 'Paper'
+
+    def __eq__(self,other):
+        return self.choice == other.choice
+    
+    def __lt__(self, other):
+        if self.choice =='r':
+            return other.choice == 'p'
+        elif self.choice == 'p':
+            return other.choice == 's'
+        else:
+            return other.choice == 'r'
+            
+    def __gt__(self, other):
+        if self.choice =='r':
+            return other.choice == 's'
+        elif self.choice == 'p':
+            return other.choice == 'r'
+        else:
+            return other.choice == 'p'
+
+
+def score_match(p1,p2):
+    score = p2.value
+    if p1==p2:
+        score += 3
+    elif p2>p1:
+        score +=6
+    else:
+        pass
+    return score
+
+
 def part1(data):
-    return
+    p1map = {'A':'r','B':'p','C':'s'}
+    p2map = {'X':'r','Y':'p','Z':'s'}
+
+    score = 0
+    for d in data:
+        if d.strip() =='':
+            continue # skip empty lines (last)
+        p1 = throw(p1map[d[0]])
+        p2 = throw(p2map[d[2]])
+        score += score_match(p1,p2)
+    return score
 
 
 def test_part1():
     data = open('test1.txt').readlines()
-    answer = 6
+    answer = 15
     result = part1(data)
     if answer != result:
         raise AssertionError(f"Score should be {answer} not {result}")
@@ -69,7 +134,8 @@ def test_part1():
 def main():
     if test_part1():
         data = open('input1.txt').readlines()
-        part1(data)
+        score = part1(data)
+        print(f"Part 1 score is {score}")
         
     return
 
