@@ -80,6 +80,7 @@ score be if everything goes exactly according to your strategy guide?
 """
 
 SYMBOLS = 'rps'
+RESULTS = 'ldw'
 
 class throw():
     """
@@ -93,7 +94,10 @@ class throw():
         if rps.lower() not in SYMBOLS:
             raise AssertionError(f"rps must be one of {SYMBOLS}")
         self.choice = rps.lower()
-        self.value = SYMBOLS.index(self.choice) + 1 
+    
+    @property
+    def value(self):
+        return SYMBOLS.index(self.choice) + 1
     
     def __repr__(self):
         if self.choice=='r':
@@ -121,6 +125,20 @@ class throw():
             return other.choice == 'r'
         else:
             return other.choice == 'p'
+
+    def __add__(self,other):
+        if not type(other)==type(1):
+            raise TypeError(f"cannot add {type(other)} only {type(int)}")
+        index = self.value-1 + other
+        index = index % 3
+        return throw(SYMBOLS[index])
+    
+    def __sub__(self,other):
+        if not type(other)==type(1):
+            raise TypeError(f"cannot add {type(other)} only {type(int)}")
+        index = self.value-1 - other
+        index = index % 3
+        return throw(SYMBOLS[index])
 
 
 def score_match(p1,p2):
@@ -158,7 +176,27 @@ def test_part1():
     return True
 
 
+def choose_throw(p1, result):
+    if result == 'd':
+        return throw(p1.choice)
+    elif result == 'w':
+        return throw(p1.choice)+1
+    else:
+        return throw(p1.choice)-1
+
+
 def part2(data):
+    p1map = {'A':'r','B':'p','C':'s'}
+    p2map = {'X':'l','Y':'d','Z':'w'}
+
+    score = 0
+    for d in data:
+        if d.strip() =='':
+            continue # skip empty lines (last)
+        p1 = throw(p1map[d[0]])
+        p2 = choose_throw(p1, p2map[d[2]])
+        score += score_match(p1,p2)
+    return score
     return 
 
 
