@@ -152,15 +152,12 @@ def part2(data):
         elif line.strip().startswith('1'): # all stacks defined now reverse the queues
             for s in stack:
                 stack[s] = list(reversed(stack[s]))
-            print(stack)
         elif line.startswith('move'):
             pass
             _, nmoves, _ , from_stack, _, to_stack = line.split()
             # move the containers without reordering
             stack[int(to_stack)].extend(stack[int(from_stack)][int('-'+nmoves):])
             del stack[int(from_stack)][int('-'+nmoves):]
-            print(line)
-            print(stack)
     for n in range(nstacks):
         if len(stack[n+1])>0:
             message += stack[n+1].pop()
