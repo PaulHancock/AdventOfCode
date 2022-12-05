@@ -49,6 +49,51 @@ Finally, one crate is moved from stack 1 to stack 2:
 The Elves just need to know which crate will end up on top of each stack; in this example, the top crates are C in stack 1, M in stack 2, and Z in stack 3, so you should combine these together and give the Elves the message CMZ.
 
 After the rearrangement procedure completes, what crate ends up on top of each stack?
+
+--- Part Two ---
+As you watch the crane operator expertly rearrange the crates, you notice the process isn't following your prediction.
+
+Some mud was covering the writing on the side of the crane, and you quickly wipe it away. The crane isn't a CrateMover 9000 - it's a CrateMover 9001.
+
+The CrateMover 9001 is notable for many new and exciting features: air conditioning, leather seats, an extra cup holder, and the ability to pick up and move multiple crates at once.
+
+Again considering the example above, the crates begin in the same configuration:
+
+    [D]    
+[N] [C]    
+[Z] [M] [P]
+ 1   2   3 
+Moving a single crate from stack 2 to stack 1 behaves the same as before:
+
+[D]        
+[N] [C]    
+[Z] [M] [P]
+ 1   2   3 
+However, the action of moving three crates from stack 1 to stack 3 means that those three moved crates stay in the same order, resulting in this new configuration:
+
+        [D]
+        [N]
+    [C] [Z]
+    [M] [P]
+ 1   2   3
+Next, as both crates are moved from stack 2 to stack 1, they retain their order as well:
+
+        [D]
+        [N]
+[C]     [Z]
+[M]     [P]
+ 1   2   3
+Finally, a single crate is still moved from stack 1 to stack 2, but now it's crate C that gets moved:
+
+        [D]
+        [N]
+        [Z]
+[M] [C] [P]
+ 1   2   3
+In this example, the CrateMover 9001 has put the crates in a totally different order: MCD.
+
+Before the rearrangement process finishes, update your simulation so that the Elves know where they should stand to be ready to unload the final supplies. After the rearrangement procedure completes, what crate ends up on top of each stack?
+
 """
 
 def part1(data):
@@ -91,12 +136,39 @@ def test_part1():
 
 
 def part2(data):
-    score = ''
-    return score
+    message = ''
+    stack = None
+    for line in data:
+        line = line[:-1] # strip the final \n
+        if line.strip().startswith('['): # defining a stack
+            # initialise our stack
+            if not stack:
+                nstacks = len(line)//3
+                stack=dict([(n+1,[]) for n in range(nstacks)])
+            # put items in the various queues
+            for i, s in enumerate(line[1::4]):
+                if s != ' ':
+                    stack[int(i+1)].append(s)
+        elif line.strip().startswith('1'): # all stacks defined now reverse the queues
+            for s in stack:
+                stack[s] = list(reversed(stack[s]))
+            print(stack)
+        elif line.startswith('move'):
+            pass
+            _, nmoves, _ , from_stack, _, to_stack = line.split()
+            # move the containers without reordering
+            stack[int(to_stack)].extend(stack[int(from_stack)][int('-'+nmoves):])
+            del stack[int(from_stack)][int('-'+nmoves):]
+            print(line)
+            print(stack)
+    for n in range(nstacks):
+        if len(stack[n+1])>0:
+            message += stack[n+1].pop()
+    return message
 
 def test_part2():
     data = open('test.txt').readlines()
-    answer = None
+    answer = 'MCD'
     result = part2(data)
     if not answer == result:
         raise AssertionError(f"Part2 FAIL: answer is {answer} not {result}")
