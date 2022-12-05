@@ -41,12 +41,31 @@ Some of the pairs have noticed that one of their assignments fully contains the 
 In how many assignment pairs does one range fully contain the other?
 """
 
-def part1():
-    return
+def part1(data):
+    score = 0
+    for line in data:
+        # 2-6,4-8 -> [start,end], [start,end]
+        elf1, elf2 = line.split(',')
+        elf1 = list(map(int, elf1.split('-')))
+        elf2 = list(map(int, elf2.strip().split('-')))
+        if elf1[0]<=elf2[0] and elf1[1]>=elf2[1]:
+            score +=1
+        elif elf1[0]>=elf2[0] and elf1[1]<=elf2[1]:
+            score +=1
+        else:
+            pass
+    return score
 
 
 def test_part1():
-    return False
+  data = open('test.txt').readlines()
+  answer = 2
+  result = part1(data)
+  if not answer == result:
+    raise AssertionError(f"Part1 FAIL: answer is {answer} not {result}")
+  else:
+    print("Part1 PASS")
+  return True
 
 
 def part2():
