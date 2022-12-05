@@ -1,4 +1,3 @@
-from itertools import zip_longest
 """
 --- Day 3: Rucksack Reorganization --- 
 
