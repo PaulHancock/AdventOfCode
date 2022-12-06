@@ -51,13 +51,31 @@ zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw: first marker after character 11 How many
 characters need to be processed before the first start-of-packet marker is
 detected?
 
+--- Part Two --- Your device's communication system is correctly detecting
+packets, but still isn't working. It looks like it also needs to look for
+messages.
+
+A start-of-message marker is just like a start-of-packet marker, except it
+consists of 14 distinct characters rather than 4.
+
+Here are the first positions of start-of-message markers for all of the above
+examples:
+
+mjqjpqmgbljsphdztnvjfqwrcgsmlb: first marker after character 19
+bvwbjplbgvbhsrlpgdmjqwftvncz: first marker after character 23
+nppdvjthqldpwncqszvftbrmjlhg: first marker after character 23
+nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg: first marker after character 29
+zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw: first marker after character 26 How many
+characters need to be processed before the first start-of-message marker is
+detected?
+
 
 """
 
-def part1(data):
-    for i in range(4,len(data)):
-        buffer = data[i-4:i]
-        if len(set(buffer))==4:
+def part1(data, marker_len=4):
+    for i in range(marker_len,len(data)):
+        buffer = data[i-marker_len:i]
+        if len(set(buffer))==marker_len:
             break
     return i
 
@@ -74,18 +92,15 @@ def test_part1():
     return True
 
 
-def part2(data):
-    score = None
-    return score
-
 def test_part2():
-    data = open('test.txt').readlines()
-    answer = ''
-    result = part2(data)
-    if not answer == result:
-        raise AssertionError(f"Part2 FAIL: answer is {answer} not {result}")
-    else:
-        print("Part2 PASS")
+    data = open('test2.txt').readlines()
+    answers = [19,23,23,29,26]
+    for i, answer in enumerate(answers):
+        result = part1(data[i],marker_len=14)
+        if not answer == result:
+            raise AssertionError(f"Part2.{i} FAIL: answer is {answer} not {result}")
+        else:
+            print(f"Part1.{i}")
     return True
 
 
@@ -97,7 +112,7 @@ def main():
 
   if test_part2():
     data = open('input.txt').readlines()
-    score = part2(data)
+    score = part1(data[0],marker_len=14)
     print(f"Part 2 score is {score}")
       
   return
