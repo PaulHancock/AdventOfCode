@@ -79,8 +79,14 @@ Following the Elf's instructions for the second column, what would your total
 score be if everything goes exactly according to your strategy guide?
 =#
 
+# we will use arithmetic modulo 3 on these symbols to determine wins
+# a-b =  0, draw
+# a-b = +1, b wins
+# a-b = -1, a wins
 symbols = Dict('r'=>0, 'p'=>1,'s'=>2)
-#results = Dict('w'=>1, 'd'=>0, 'l'=>-1)
+# this is how to modify the symbol of a
+# so that b will get the desired result
+results = Dict('w'=>1, 'd'=>0, 'l'=>-1)
 
 function scoreMatch(p1,p2)
     score = p2+1
@@ -113,7 +119,23 @@ function part1(data)
 end
 
 function part2(data)
-    return false
+    p1map = Dict('A'=>symbols['r'],
+                 'B'=>symbols['p'],
+                 'C'=>symbols['s'])
+    p2map = Dict('X'=>results['l'],
+                 'Y'=>results['d'],
+                 'Z'=>results['w'])
+    score = 0
+    for line in data
+        l = strip(line)
+        if length(l) == 0
+            continue
+        end
+        p1 = p1map[l[1]]
+        p2 = mod(p1 + p2map[l[3]],3)
+        score += scoreMatch(p1,p2)
+    end
+    return score
 end
 
 function main()
@@ -125,13 +147,13 @@ function main()
         println("Part 1 is $(part1(data))")
     end
 
-    # @assert part2(readlines(open("test.txt"))) == 0
+    @assert part2(readlines(open("test1.txt"))) == 12
 
-    # open("input.txt") do f
-    #     # read till end of file
-    #     data = readlines(f)
-    #     println("Part 2 is $(part2(data))")
-    # end
+    open("input1.txt") do f
+        # read till end of file
+        data = readlines(f)
+        println("Part 2 is $(part2(data))")
+    end
 
 end
 
