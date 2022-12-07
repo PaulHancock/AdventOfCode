@@ -74,7 +74,24 @@ To begin, find all of the directories with a total size of at most 100000, then 
 
 Find all of the directories with a total size of at most 100000. What is the sum of the total sizes of those directories?
 
+--- Part Two ---
+Now, you're ready to choose a directory to delete.
+
+The total disk space available to the filesystem is 70000000. To run the update, you need unused space of at least 30000000. You need to find a directory you can delete that will free up enough space to run the update.
+
+In the example above, the total size of the outermost directory (and thus the total amount of used space) is 48381165; this means that the size of the unused space must currently be 21618835, which isn't quite the 30000000 required by the update. Therefore, the update still requires a directory with total size of at least 8381165 to be deleted before it can run.
+
+To achieve this, you have the following options:
+
+Delete directory e, which would increase unused space by 584.
+Delete directory a, which would increase unused space by 94853.
+Delete directory d, which would increase unused space by 24933642.
+Delete directory /, which would increase unused space by 48381165.
+Directories e and a are both too small; deleting them would not free up enough space. However, directories d and / are both big enough! Between these, choose the smallest: d, increasing unused space by 24933642.
+
+Find the smallest directory that, if deleted, would free up enough space on the filesystem to run the update. What is the total size of that directory?
 =#
+
 mutable struct dir
     name::String
     size::Int
@@ -104,7 +121,7 @@ function get_size_lt(node, agg, size_max)
     return agg
 end
 
-function part1(data)
+function make_tree(data)
     # make the directory tree
     root = dir("/", 0, nothing, [])
     current = root
@@ -136,19 +153,49 @@ function part1(data)
             end
         end
     end
+    return root
+end
+
+function part1(data)
+    root = make_tree(data)
     get_size!(root)
-    println("total size is $(root.size)")
     sizelt100k = get_size_lt(root, 0, 100000)
-    println("dirs less than 100k sum to $(sizelt100k)")
     return sizelt100k
 end
 
+function get_dirs!(node, agg)
+    # finall the sub directories and record their sizes into agg
+    for c in node.children
+        if length(c.children) > 0 # is a directory
+            # record the size of the child directories
+            push!(agg, c.size)
+            # recurse into those directories
+            get_dirs!(c, agg)
+        end
+    end
+    return agg
+end
+
 function part2(data)
+    fs_size = 70000000
+    update_req = 30000000
+    root = make_tree(data)
+    get_size!(root)
+    sizes = sort(get_dirs!(root, []))
+    println(sizes)
+    for s in sizes
+        println("$s $(root.size-s)")
+        if fs_size - (root.size - s) > update_req
+            return s
+        end
+    end
     return false
 end
 
 function main()
+    println("test 1")
     @assert part1(readlines(open("test.txt"))) == 95437
+    println("PASS")
 
     open("input.txt") do f
         # read till end of file
@@ -156,8 +203,10 @@ function main()
         println("Part 1 is $(part1(data))")
     end
 
-    @assert part2(readlines(open("test.txt"))) ==
-            open("input.txt") do f
+    println("test 2")
+    @assert part2(readlines(open("test.txt"))) == 24933642
+    println("PASS")
+    open("input.txt") do f
         # read till end of file
         data = readlines(f)
         println("Part 2 is $(part2(data))")
