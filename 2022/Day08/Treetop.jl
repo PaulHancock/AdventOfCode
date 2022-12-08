@@ -29,8 +29,89 @@ With 16 trees visible on the edge and another 5 visible in the interior, a total
 Consider your map; how many trees are visible from outside the grid?
 =#
 
-function part1(data)
+
+function is_visible(grid, i, j)
+    # edges are always visible
+    if (j == 1) | (i == 1)
+        return true
+    end
+    if (j == size(grid)[2]) | (i == size(grid)[1])
+        return true
+    end
+    height = grid[i, j]
+
+    #left
+    vis = true
+    for col in j-1:-1:1
+        # println("testing $(i),$(col):$(grid[i, col])")
+        if grid[i, col] >= height
+            vis = false
+            break
+        end
+    end
+    # println("$(height) visible from the left: $(vis)")
+    vis && return true
+
+    #right
+    vis = true
+    for col in j+1:size(grid)[2]
+        # println("testing $(i),$(col):$(grid[i, col])")
+        if grid[i, col] >= height
+            vis = false
+            break
+        end
+    end
+    # println("$(height) visible from the right: $(vis)")
+    vis && return true
+
+    #up
+    vis = true
+    for row in i-1:-1:1
+        # println("testing $(row),$(j)")
+        if grid[row, j] >= height
+            vis = false
+            break
+        end
+    end
+    # println("$(height) visible from the top: $(vis)")
+    vis && return true
+
+    #down
+    vis = true
+    for row in i+1:size(grid)[1]
+        # println("testing $(row),$(j)")
+        if grid[row, j] >= height
+            vis = false
+            break
+        end
+    end
+    # println("$(height) visible from the bottom: $(vis)")
+    vis && return true
     return false
+end
+
+
+function part1(data)
+    # load the data into a grid
+    height = length(data)
+    width = length(data[1])
+    grid = Array{Int}(undef, height, width)
+    for (i, line) in enumerate(data)
+        for (j, char) in enumerate(strip(line))
+            grid[i, j] = parse(Int, char)
+        end
+    end
+    visible = similar(grid)
+
+    for i in 1:width
+        for j in 1:height
+            # println(i, j, grid[i, j])
+            visible[i, j] = is_visible(grid, i, j)
+        end
+    end
+    # println(visible)
+    # println(sum(visible))
+    return sum(visible)
 end
 
 function part2(data)
