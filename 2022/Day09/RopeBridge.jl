@@ -242,8 +242,65 @@ Simulate your complete hypothetical series of motions. How many positions does t
 
 =#
 
+mapdir = Dict("U" => [1, 0],
+    "D" => [-1, 0],
+    "L" => [0, -1],
+    "R" => [0, 1])
+
+struct point
+    x::Int
+    y::Int
+end
+
+mutable struct rope
+    head::Array{Int}
+    tail::Array{Int}
+    tail_loc::Set{point}
+end
+
+function move!(r, dir, amount)
+    for step in 1:amount
+        # move the head
+        r.head += dir
+        # move toward where the head is
+        offset = r.head .- r.tail
+        # don't move if the head is ontop or adjacent to the tail
+        if (abs(offset[1]) > 1) | (abs(offset[2]) > 1)
+            offset = max.(min.(offset, [1, 1]), [-1, -1])
+            r.tail = r.tail .+ offset
+            # remember the locations of the tail
+            union!(r.tail_loc, Set([point(r.tail[1], r.tail[2])]))
+        end
+        # fprint(r)
+    end
+end
+
+function fprint(r::rope)
+    for i in 6:-1:1
+        for j in 1:6
+            if r.head == [i, j]
+                print('H')
+            elseif r.tail == [i, j]
+                print('T')
+            else
+                print('.')
+            end
+        end
+        println()
+    end
+    println()
+end
+
 function part1(data)
-    return false
+    r = rope([1, 1], [1, 1], Set([point(1, 1)]))
+    for line in data
+        dir, amount = split(strip(line))[1:2]
+        dir = mapdir[dir]
+        amount = parse(Int, amount)
+        move!(r, dir, amount)
+    end
+    println(length(r.tail_loc))
+    return length(r.tail_loc)
 end
 
 function part2(data)
@@ -251,7 +308,7 @@ function part2(data)
 end
 
 function main()
-    @assert part1(readlines(open("test.txt"))) == ?
+    @assert part1(readlines(open("test.txt"))) == 13
 
     open("input.txt") do f
         # read till end of file
@@ -259,8 +316,8 @@ function main()
         println("Part 1 is $(part1(data))")
     end
 
-    @assert part2(readlines(open("test.txt"))) ==
-            open("input.txt") do f
+    @assert part2(readlines(open("test.txt"))) == true
+    open("input.txt") do f
         # read till end of file
         data = readlines(f)
         println("Part 2 is $(part2(data))")
