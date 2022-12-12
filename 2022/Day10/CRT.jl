@@ -343,7 +343,7 @@ function part1(data)
 end
 
 function part2(data)
-    register = 2
+    register = 2 # increment the register is is the same as assuming the sprite location is left aligned instead of centre aligned.
     cycle = 0
     crt = [] # an empty display
     for line in data
