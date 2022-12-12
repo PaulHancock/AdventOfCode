@@ -190,7 +190,30 @@ Find the signal strength during the 20th, 60th, 100th, 140th, 180th, and 220th c
 =#
 
 function part1(data)
-    return false
+    register = 1
+    cycle = 0
+    checkpoints = []
+    for line in data
+        if line[1] == 'n' # noop
+            cycle += 1
+            if mod(cycle, 40) == 20
+                push!(checkpoints, cycle * register)
+            end
+        else # addx
+            val = split(strip(line))[2]
+            cycle += 1
+            if mod(cycle, 40) == 20
+                push!(checkpoints, cycle * register)
+            end
+            cycle += 1
+            if mod(cycle, 40) == 20
+                push!(checkpoints, cycle * register)
+            end
+            register += parse(Int, val)
+        end
+    end
+    println(sum(checkpoints))
+    return sum(checkpoints)
 end
 
 function part2(data)
@@ -198,7 +221,7 @@ function part2(data)
 end
 
 function main()
-    @assert part1(readlines(open("test.txt"))) == ?
+    @assert part1(readlines(open("test.txt"))) == 13140
 
     open("input.txt") do f
         # read till end of file
@@ -206,8 +229,8 @@ function main()
         println("Part 1 is $(part1(data))")
     end
 
-    @assert part2(readlines(open("test.txt"))) ==
-            open("input.txt") do f
+    @assert part2(readlines(open("test.txt"))) == true
+    open("input.txt") do f
         # read till end of file
         data = readlines(f)
         println("Part 2 is $(part2(data))")
