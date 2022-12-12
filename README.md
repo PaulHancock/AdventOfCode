@@ -15,7 +15,7 @@ AoC so far:
 | [06](2022/Day06) | :star:     | :star:     | 1,2 | |
 | [07](2022/Day07) | :star:     | :star:     | | 1,2 |
 | [08](2022/Day08) | :star:     | :star:     | | 1,2 |
-| 09               | :question: | :question: | | |
+| [09](2022/Day09) | :star:     | :star:     | | 1,2 |
 | 10               | :question: | :question: | | |
 | 11               | :question: | :question: | | |
 | 12               | :question: | :question: | | |
