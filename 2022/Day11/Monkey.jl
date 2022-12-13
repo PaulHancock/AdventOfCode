@@ -223,31 +223,64 @@ mutable struct Monkey
   test_false::Int
 end
 
-fucdict = Dict('*' => *, '+' => +)
+funcdict = Dict("*" => *, "+" => +)
 
 function monkey(line)
   name = parse(Int, split(line[1][1:end-1])[end])
   items = [parse(Int, i) for i in split(line[2][18:end], ",")]
 
-  _, symbol, post = split(split(line[3], '=')[2])
-  if post == "old"
-    op(x) = funcdict[symbol](x, x)
-  else
-    op(x) = funcdict[symbol](x, parse(Int, post))
-  end
-
-  test(x) = mod(parse(Int, (split(line[4])[end])), x) == 0
+  test(x) = mod(x, parse(Int, (split(line[4])[end]))) == 0
   tt = parse(Int, split(line[5])[end])
-  tt = parse(Int, split(line[6])[end])
-  return Monkey(name, items, 0, op, test, tt, tf)
+  tf = parse(Int, split(line[6])[end])
+
+  # parse this last so that we can use annon functions to avoid redifining functions
+  _, symbol, post = split(split(line[3], '=')[2])
+  if contains(post, "old")
+    return Monkey(name, items, 0, x -> funcdict[symbol](x, x), test, tt, tf)
+  else
+    return Monkey(name, items, 0, x -> funcdict[symbol](x, parse(Int, post)), test, tt, tf)
+  end
 end
 
 function part1(data)
   monkies = []
   for m in 1:7:length(data)
-    push!(monkies, monkey(data[m:m+6]))
+    push!(monkies, monkey(data[m:m+5]))
   end
-  return false
+  println("There are $(length(monkies)) monkies messing with you")
+
+  for r in 1:20
+    for m in monkies
+      # println(" monkey $(m.name) has $(m.items)")
+      while length(m.items) > 0
+        # inspect an item
+        m.items[1] = m.op(m.items[1]) # increase worry level
+        # monkey is bored
+        m.items[1] = div(m.items[1], 3) # decrease worry by a factor of 3
+        m.inspected += 1 # record that the monkey inspected an item
+
+        if m.test(m.items[1])
+          #monkey index = name +1
+          # println("  throws item $(m.items[1]) to $(m.test_true)")
+          push!(monkies[m.test_true+1].items, m.items[1])
+        else
+          # println("  throws item $(m.items[1]) to $(m.test_false)")
+          push!(monkies[m.test_false+1].items, m.items[1])
+        end
+        # remove this item from this monkey's list
+        m.items = m.items[2:end]
+      end
+    end
+    println("After round $(r) monkeys hold the following items")
+    for m in monkies
+      println("Monkey $(m.name): $(m.items)")
+    end
+  end
+  inspections = [m.inspected for m in monkies]
+  top2 = sort(inspections)[end-1:end]
+  monkeybusiness = top2[1] * top2[2]
+  println([m.inspected for m in monkies])
+  return monkeybusiness
 end
 
 function part2(data)
