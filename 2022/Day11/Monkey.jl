@@ -315,18 +315,15 @@ function monkey(line)
   name = parse(Int, split(line[1][1:end-1])[end])
   items = [parse(Int, i) for i in split(line[2][18:end], ",")]
 
+  _, symbol, post = split(split(line[3], '=')[2])
+  op = contains(post, "old") ? (x) -> funcdict[symbol](x, x) : (x) -> funcdict[symbol](x, parse(Int, post))
+
   test_val = parse(Int, (split(line[4])[end]))
   test(x) = mod(x, test_val) == 0
   tt = parse(Int, split(line[5])[end])
   tf = parse(Int, split(line[6])[end])
 
-  # parse this last so that we can use annon functions to avoid redifining functions
-  _, symbol, post = split(split(line[3], '=')[2])
-  if contains(post, "old")
-    return Monkey(name, items, 0, x -> funcdict[symbol](x, x), test, test_val, tt, tf)
-  else
-    return Monkey(name, items, 0, x -> funcdict[symbol](x, parse(Int, post)), test, test_val, tt, tf)
-  end
+  return Monkey(name, items, 0, op, test, test_val, tt, tf)
 end
 
 function part1(data)
