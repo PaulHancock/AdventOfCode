@@ -29,25 +29,41 @@ This path reaches the goal in 31 steps, the fewest possible.
 What is the fewest steps required to move from your current position to the location that should get the best signal?
 =#
 
-function adjmatrix(graph)
-    height, width = size(graph)
-    mat = zeros(Int, (length(graph),length(graph))) .+ Inf
-    for row in 1:height
-        for col in 1:width
-            for i in max(row-1,1):min(row+1, height) 
-                for j in max(col-1,1):min(col+1,width)
-                    if graph[row,col] <= graph[i,j]+1 # can step down any dist, but only up max of 1 height
-                        mindex = (row-1)*width + col
-                        mat[mindex, (i-1)*width + j] = graph[i,j] - graph[row,col]
-                    end
-                end
-            end
-        end
+
+function get_neighbours(elevation, node)
+    #=
+    Find the neibouring nodes to the one given the size of the elevation grid
+    =#
+    height,width = size(elevation)
+    maxnode = width*height
+    neighbours=[]
+    if node-width >= 1
+        push!(neighbours, node-width)
     end
-    return mat
+    if node+width <= maxnode
+        push!(neighbours, node+width)
+    end
+    if node-1 >= 1
+        push!(neighbours, node-1)
+    end
+    if node+1 <= maxnode
+        push!(neighbours, node+1)
+    end
+    return neighbours
 end
 
-function part1(data)
+function pos2node(width, pos)
+    node = (pos[1]-1)*width + pos[2]
+    return node
+end
+
+function node2pos(width, node)
+    row = div(node-1, width) +1
+    col = mod(node-1, width) +1 
+    return [row,col]
+end
+         
+function part1(data, test)
     width = length(data[1])
     height = length(data)
     elevation = ones(Int,(height,width))
@@ -60,7 +76,8 @@ function part1(data)
             index = findall('S',line)
             line = replace(line, 'S'=>'a')
             start = [i,index[1]]
-        elseif 'E' in line
+        end
+        if 'E' in line
             index = findall('E',line)
             line = replace(line, 'E'=>'z')
             goal = [i,index[1]]
@@ -68,28 +85,50 @@ function part1(data)
         elevation[i, begin:end] = [convert(Int,i)-offset for i in line]
     end
     println("Starting at $(start), and working towards $(goal)")
-    println(elevation)
-    adjm = adjmatrix(elevation)
-    for l in 1:size(adjm)[1]
-        println(adjm[l, begin:end])
-    end
+    test && println(elevation)
+    start_node = pos2node(width,start)
+    goal_node = pos2node(width,goal)
 
-    visitd = [false for i in 1:length(elevation)]
-    distances = [ Inf for i in 1:length(elevation)]
-    distances[1] = 0
-    for node in 2:length(elevation)
-        row = div(node, width) +1
-        col = mod(node, width) +1
-        for i in max(row-1,1):min(row+1, height) 
-            for j in max(col-1,1):min(col+1,width)
-                if (i!=row) && (j!= col) && (graph[row,col] <= graph[i,j]+1) # can step down any dist, but only up max of 1 height
-                    distances[node] = graph[i,j] - graph[row,col]
+    distances = ones(Int, width*height) .+ Inf
+    distances[start_node] = 0
+    visited = zeros(Int, width*height)
+
+    # keep going until we reach the goal node
+    while visited[goal_node] != 1
+        # find the smallest distance among the not yet visited nodes
+        # and choose the corresponding node as the next to work on
+        curr_node = 0
+        min_dist = Inf
+        test && println("distances $(distances)")
+        test && println("visited $(visited)")
+        for (i,(d,v)) in enumerate(zip(distances, visited))
+            if v == 0
+                if d < min_dist
+                    curr_node = i
+                    min_dist = d
                 end
             end
         end
-
+        # thid node position
+        tnpos = node2pos(width, curr_node)
+        test && println("looking at node $(curr_node) at $(tnpos)")
+        for n in get_neighbours(elevation, curr_node)
+            # neighbour node position
+            nnpos = node2pos(width, n)
+            if visited[n] == 0
+                test && println(" looking at neighbour $(n) at  $(nnpos)")
+                diff = elevation[nnpos[1],nnpos[2]] - elevation[tnpos[1],tnpos[2]]
+                # if the difference in elevation is at most 1 then we can make a single step
+                if diff <=1
+                    test && println("  potential step")
+                    distances[n] = min(distances[n], distances[curr_node]+1)
+                end
+            end
+        end
+        visited[curr_node] = 1
     end
-    return false
+    println("shortest distances is $(distances[goal_node])")
+    return distances[goal_node]
 end
 
 function part2(data)
@@ -97,12 +136,12 @@ function part2(data)
 end
 
 function main()
-    @assert part1(readlines(open("test.txt"))) == 31
+    @assert part1(readlines(open("test.txt")), true) == 31
 
     open("input.txt") do f
         # read till end of file
         data = readlines(f)
-        println("Part 1 is $(part1(data))")
+        println("Part 1 is $(part1(data,false))")
     end
 
     @assert part2(readlines(open("test.txt"))) == true
