@@ -109,8 +109,70 @@ What are the indices of the pairs that are already in the right order? (The firs
 Determine which pairs of packets are already in the right order. What is the sum of the indices of those pairs?
 =#
 
+using Logging
+
+# logic is:
+# -1 => incorrect ordering
+# 1 => correct ordering
+# 0 => indeterminite
+
+function ordered(left::Int, right::Int)
+    @debug println("checking order for int,int $(left) vs $(right)")
+    if left < right
+        return 1
+    elseif left == right
+        return 0
+    else 
+        return -1
+    end
+end
+
+function ordered(left::Int, right::Vector)
+    @debug println("checking order for int,vector $(left) vs $(right)")
+    ordered([left], right)
+end
+
+function ordered(left::Vector, right::Int)
+    @debug println("checking order for vector,int $(left) vs $(right)")
+    ordered(left,[right])
+end
+
+function ordered(left::Vector, right::Vector)
+    @debug println("checking order for vector, vector $(left) vs $(right)")
+    for (l,r) in zip(left, right)
+        comp = ordered(l,r)
+        # if l < r or l>r then we report the outcome
+        if comp in [-1,1]
+            return comp
+        end
+    end
+    # at this point we have exhausted on of the lists
+    if length(left) < length(right)
+        return 1
+    elseif length(left) > length(right)
+        return -1
+    end
+    # both lists exhausted but with no clear descision on the ordering
+    @warn println("indeterminite ordering")
+    return 0
+end
+
 function part1(data)
-    return false
+    acc = 0
+    for l in 1:3:length(data)
+        l1 = eval(Meta.parse(data[l]))
+        l2 = eval(Meta.parse(data[l+1]))
+        @debug println(l1)
+        @debug println(l2)
+        if ordered(l1, l2) == 1
+            print("l1 < l2")
+            index = div(l-1,3)+1
+            println(" at index $(index)")
+            acc += index
+        end
+    end
+    println(acc)
+    return acc
 end
 
 function part2(data)
@@ -118,8 +180,10 @@ function part2(data)
 end
 
 function main()
-    @assert part1(readlines(open("test.txt"))) == ?
-
+    with_logger(ConsoleLogger(stderr, Logging.Debug)) do
+        @assert part1(readlines(open("test.txt"))) == 13
+    end
+    
     open("input.txt") do f
         # read till end of file
         data = readlines(f)
