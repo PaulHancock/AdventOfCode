@@ -107,6 +107,40 @@ Using these rules, you can determine which of the pairs in the example are in th
 What are the indices of the pairs that are already in the right order? (The first pair has index 1, the second pair has index 2, and so on.) In the above example, the pairs in the right order are 1, 2, 4, and 6; the sum of these indices is 13.
 
 Determine which pairs of packets are already in the right order. What is the sum of the indices of those pairs?
+
+--- Part Two ---
+
+Now, you just need to put all of the packets in the right order. Disregard the blank lines in your list of received packets.
+
+The distress signal protocol also requires that you include two additional divider packets:
+
+[[2]]
+[[6]]
+Using the same rules as before, organize all packets - the ones in your list of received packets as well as the two divider packets - into the correct order.
+
+For the example above, the result of putting the packets in the correct order is:
+
+[]
+[[]]
+[[[]]]
+[1,1,3,1,1]
+[1,1,5,1,1]
+[[1],[2,3,4]]
+[1,[2,[3,[4,[5,6,0]]]],8,9]
+[1,[2,[3,[4,[5,6,7]]]],8,9]
+[[1],4]
+[[2]]
+[3]
+[[4,4],4,4]
+[[4,4],4,4,4]
+[[6]]
+[7,7,7]
+[7,7,7,7]
+[[8,7,6]]
+[9]
+Afterward, locate the divider packets. To find the decoder key for this distress signal, you need to determine the indices of the two divider packets and multiply them together. (The first packet is at index 1, the second packet is at index 2, and so on.) In this example, the divider packets are 10th and 14th, and so the decoder key is 140.
+
+Organize all of the packets into the correct order. What is the decoder key for the distress signal?
 =#
 
 using Logging
@@ -117,7 +151,7 @@ using Logging
 # 0 => indeterminite
 
 function ordered(left::Int, right::Int)
-    @debug println("checking order for int,int $(left) vs $(right)")
+    # @debug println("checking order for int,int $(left) vs $(right)")
     if left < right
         return 1
     elseif left == right
@@ -128,17 +162,17 @@ function ordered(left::Int, right::Int)
 end
 
 function ordered(left::Int, right::Vector)
-    @debug println("checking order for int,vector $(left) vs $(right)")
+    # @debug println("checking order for int,vector $(left) vs $(right)")
     ordered([left], right)
 end
 
 function ordered(left::Vector, right::Int)
-    @debug println("checking order for vector,int $(left) vs $(right)")
+    # @debug println("checking order for vector,int $(left) vs $(right)")
     ordered(left,[right])
 end
 
 function ordered(left::Vector, right::Vector)
-    @debug println("checking order for vector, vector $(left) vs $(right)")
+    # @debug println("checking order for vector, vector $(left) vs $(right)")
     for (l,r) in zip(left, right)
         comp = ordered(l,r)
         # if l < r or l>r then we report the outcome
@@ -153,7 +187,7 @@ function ordered(left::Vector, right::Vector)
         return -1
     end
     # both lists exhausted but with no clear descision on the ordering
-    @warn println("indeterminite ordering")
+    # @warn println("indeterminite ordering")
     return 0
 end
 
@@ -165,9 +199,9 @@ function part1(data)
         @debug println(l1)
         @debug println(l2)
         if ordered(l1, l2) == 1
-            print("l1 < l2")
+            @debug print("l1 < l2")
             index = div(l-1,3)+1
-            println(" at index $(index)")
+            @debug println(" at index $(index)")
             acc += index
         end
     end
@@ -176,7 +210,30 @@ function part1(data)
 end
 
 function part2(data)
-    return false
+    lines = []
+    acc = 0
+    push!(lines, [[2]])
+    push!(lines, [[6]])
+    for l in 1:3:length(data)
+        push!(lines, eval(Meta.parse(data[l])))
+        push!(lines, eval(Meta.parse(data[l+1])))
+    end
+    sort!(lines, lt=(x,y)->ordered(x,y)==1)
+    @debug println("Sorting complete")
+    indx1 = 0
+    indx2 = 0
+    for (i,l) in enumerate(lines)
+        println(l)
+        if l==[[2]]
+            @debug println("index 1 is $(i)")
+            indx1 = i
+        elseif l == [[6]]
+            @debug println("index 2 is $(i)")
+            indx2 = i
+            break
+        end
+    end
+    return indx1 * indx2
 end
 
 function main()
@@ -190,7 +247,9 @@ function main()
         println("Part 1 is $(part1(data))")
     end
 
-    @assert part2(readlines(open("test.txt"))) == 
+    with_logger(ConsoleLogger(stderr, Logging.Debug)) do
+        @assert part2(readlines(open("test.txt"))) == 140
+    end
 
     open("input.txt") do f
         # read till end of file
