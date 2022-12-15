@@ -1,4 +1,8 @@
+#=
 
+=#
+
+using Logging
 
 function part1(data)
     return false
@@ -9,7 +13,9 @@ function part2(data)
 end
 
 function main()
-    @assert part1(readlines(open("test.txt"))) == ?
+    with_logger(ConsoleLogger(stderr, Logging.Debug)) do
+        @assert part1(readlines(open("test.txt"))) == true
+    end
 
     open("input.txt") do f
         # read till end of file
@@ -17,7 +23,9 @@ function main()
         println("Part 1 is $(part1(data))")
     end
 
-    @assert part2(readlines(open("test.txt"))) == 
+    with_logger(ConsoleLogger(stderr, Logging.Debug)) do
+        @assert part2(readlines(open("test.txt"))) == true
+    end
 
     open("input.txt") do f
         # read till end of file
