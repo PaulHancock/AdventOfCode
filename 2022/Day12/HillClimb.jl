@@ -156,72 +156,88 @@ function part1(data)
     return distances[goal_node]
 end
 
-function part2(data, test)
+function part2(data)
     width = length(data[1])
     height = length(data)
     elevation = ones(Int,(height,width))
     offset = convert(Int, 'a')-1
-    start = [0,0]
+    starts = []
     goal = [0,0]
     for (i, line) in enumerate(data)
         #println(i,line)
         if 'S' in line
             index = findall('S',line)
             line = replace(line, 'S'=>'a')
-            start = [i,index[1]]
         end
         if 'E' in line
             index = findall('E',line)
             line = replace(line, 'E'=>'z')
             goal = [i,index[1]]
         end
+        for j in findall('a',line)
+            push!(starts,[i, j[1]])
+        end
         elevation[i, begin:end] = [convert(Int,i)-offset for i in line]
     end
-    println("Starting at $(start), and working towards $(goal)")
-    @debug println(elevation)
-    start_node = pos2node(width,start)
-    goal_node = pos2node(width,goal)
 
-    distances = ones(Int, width*height) .+ Inf
-    distances[start_node] = 0
-    visited = zeros(Int, width*height)
+    best_start = nothing
+    best_dist = Inf
+    for start in starts
+        println("Starting at $(start), and working towards $(goal)")
+        @debug println(elevation)
+        start_node = pos2node(width,start)
+        goal_node = pos2node(width,goal)
 
-    # keep going until we reach the goal node
-    while visited[goal_node] != 1
-        # find the smallest distance among the not yet visited nodes
-        # and choose the corresponding node as the next to work on
-        curr_node = 0
-        min_dist = Inf
-        @debug println("distances $(distances)")
-        @debug println("visited $(visited)")
-        for (i,(d,v)) in enumerate(zip(distances, visited))
-            if v == 0
-                if d < min_dist
-                    curr_node = i
-                    min_dist = d
+        distances = ones(Int, width*height) .+ Inf
+        distances[start_node] = 0
+        visited = zeros(Int, width*height)
+
+        # keep going until we reach the goal node
+        while visited[goal_node] != 1
+            # find the smallest distance among the not yet visited nodes
+            # and choose the corresponding node as the next to work on
+            curr_node = 0
+            min_dist = Inf
+            @debug println("distances $(distances)")
+            @debug println("visited $(visited)")
+            for (i,(d,v)) in enumerate(zip(distances, visited))
+                if v == 0
+                    if d < min_dist
+                        curr_node = i
+                        min_dist = d
+                    end
                 end
             end
-        end
-        # thid node position
-        tnpos = node2pos(width, curr_node)
-        @debug println("looking at node $(curr_node) at $(tnpos)")
-        for n in get_neighbours(elevation, curr_node)
-            # neighbour node position
-            nnpos = node2pos(width, n)
-            if visited[n] == 0
-                @debug println(" looking at neighbour $(n) at  $(nnpos)")
-                diff = elevation[nnpos[1],nnpos[2]] - elevation[tnpos[1],tnpos[2]]
-                # if the difference in elevation is at most 1 then we can make a single step
-                if diff <=1
-                    @debug println("  potential step")
-                    distances[n] = min(distances[n], distances[curr_node]+1)
+            if curr_node ==0
+                @debug println("cannot find solution")
+                break
+            end
+            # this node position
+            tnpos = node2pos(width, curr_node)
+            @debug println("looking at node $(curr_node) at $(tnpos)")
+            for n in get_neighbours(elevation, curr_node)
+                # neighbour node position
+                nnpos = node2pos(width, n)
+                if visited[n] == 0
+                    @debug println(" looking at neighbour $(n) at  $(nnpos)")
+                    diff = elevation[nnpos[1],nnpos[2]] - elevation[tnpos[1],tnpos[2]]
+                    # if the difference in elevation is at most 1 then we can make a single step
+                    if diff <=1
+                        @debug println("  potential step")
+                        distances[n] = min(distances[n], distances[curr_node]+1)
+                    end
                 end
             end
+            visited[curr_node] = 1
         end
-        visited[curr_node] = 1
+        @debug println("shortest distances is $(distances[goal_node])")
+        if distances[goal_node] < best_dist
+            best_dist = distances[goal_node]
+            best_start = start
+        end
     end
-    println("shortest distances is $(distances[goal_node])")
-    return distances[goal_node]
+    println("best start is $(best_start) with distance $(best_dist)")
+    return best_dist
 end
 
 function main()
@@ -233,7 +249,7 @@ function main()
         data = readlines(f)
         println("Part 1 is $(part1(data))")
     end
-    
+
     with_logger(ConsoleLogger(stderr, Logging.Debug)) do
         @assert part2(readlines(open("test.txt"))) == 29
     end
