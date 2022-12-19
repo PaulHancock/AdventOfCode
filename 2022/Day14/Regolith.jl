@@ -152,20 +152,24 @@ Using your scan, simulate the falling sand until the source of the sand becomes 
 
 using Logging
 
-function gen_cave(data)
+function gen_cave(data, part)
     lines =[]
     max_rows = 0
+    offset = part==2 ? 1 : 0
     for line in data
         # note that coords are x,y but we index arrays as y,x !
         @debug println(line)
         pairs = split(line, "->")
         points = [split(strip(p),',')[1:2] for p in pairs]
-        points = [ [parse(Int,a[1]), parse(Int, a[2])]  for a in points  ]
+        points = [ [parse(Int,a[1]), parse(Int, a[2]) + offset]  for a in points  ]
         push!(lines, points)
         max_rows = max(max_rows, maximum([p[2] for p in points]))
     end
-    @debug println("Cave has $(max_rows) rows")
+    println("Cave has $(max_rows) rows")
     # cave = Array{Char}(undef, (1001, 10))
+    if part == 2
+        max_rows +=2
+    end
     cave = fill('.', (max_rows,1001))
     for points in lines
         for (s,e) in zip(points[1:end-1], points[2:end])
@@ -221,7 +225,7 @@ function ppcave(cave)
 end
 
 function part1(data)
-    cave = gen_cave(data)
+    cave = gen_cave(data, 1)
     @debug ppcave(cave)
     start = [1,500]
     voided = false
@@ -237,8 +241,40 @@ function part1(data)
     return i
 end
 
+function drop_sand2!(cave, loc)
+    settled = false
+    curr_loc = loc
+    while ~ settled
+        new_loc = step(cave,curr_loc)
+        if isnothing(new_loc)
+            settled = true
+            cave[curr_loc[1],curr_loc[2]] = 'o'
+        else
+            curr_loc=new_loc
+        end
+    end
+    return curr_loc
+end
+
 function part2(data)
-    return false
+    cave = gen_cave(data, 2)
+    # fill in the floor
+    cave[end,begin:end] .= '#'
+    @debug ppcave(cave)
+    start = [1,500]
+    filled = false
+    i = 0
+    while ~ filled
+        @debug println("dropped sand #$(i)")
+        loc = drop_sand2!(cave, start)
+        i+=1
+        if loc == start
+            break
+        end
+        @debug ppcave(cave)
+    end
+    println(i)
+    return i
 end
 
 function main()
@@ -253,7 +289,7 @@ function main()
     end
 
     with_logger(ConsoleLogger(stderr, Logging.Debug)) do
-        @assert part2(readlines(open("test.txt"))) == true
+        @assert part2(readlines(open("test.txt"))) == 93
     end
 
     open("input.txt") do f
