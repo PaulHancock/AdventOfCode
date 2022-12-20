@@ -98,8 +98,81 @@ Consult the report from the sensors you just deployed. In the row where y=200000
 
 using Logging
 
-function part1(data)
-    return false
+
+function dist(a,b)
+    return abs(a[1]-b[1]) + abs(a[2]-b[2])
+end
+
+
+function getsensors(data)
+    # find and map all the sensors, beacons, and distances
+    sensors = []
+    beacons = []
+    distances = []
+    for line in data
+        s, b = split(line, ':')
+
+        s = split(s[11:end], ',')
+        s=[ parse(Int, split(i,'=')[2]) for i in s]
+        push!(sensors, s)
+
+        b = split(b[21:end], ',')
+        b=[ parse(Int, split(i,'=')[2]) for i in b]
+        push!(beacons, b)
+
+        push!(distances, dist(s,b))
+    end
+    return (sensors, beacons, distances)
+end
+
+
+function couldbebeacon(sensors, distances, pos)
+    
+    for (s,d) in zip(sensors, distances)
+        if dist(pos, s) <=d
+            return false
+        end
+    end
+    return true
+end
+
+
+function part1(data, y)
+    (sensors, beacons, distances) = getsensors(data)
+    println(sensors)
+    println(beacons)
+    println(distances)
+    # find the cave boundaries
+    min_row = 0
+    max_row = 0 
+    min_col = 0
+    max_col = 0
+    for (s,d) in zip(sensors, distances)
+        min_row = min(min_row, s[1]-d)
+        max_row = max(max_row, s[1]+d)
+        min_col = min(min_col, s[2]-d)
+        max_col = max(max_col, s[2]+d)
+    end
+    println("Cave is:")
+    println(" rows $(min_row) - > $(max_row)")
+    println(" cols $(min_col) ->  $(max_col)")
+    no_beacons = 0
+    line = []
+    for i in min_col:max_col
+        if ~ ( [i,y] in beacons)
+            if ~couldbebeacon(sensors, distances, [i, y])
+                no_beacons +=1
+                push!(line, '#')
+            else
+                push!(line, '.')
+            end
+        else
+            push!(line, 'B')
+        end
+    end
+    println(join(line))
+    println(no_beacons)
+    return no_beacons
 end
 
 function part2(data)
@@ -108,13 +181,13 @@ end
 
 function main()
     with_logger(ConsoleLogger(stderr, Logging.Debug)) do
-        @assert part1(readlines(open("test.txt"))) == 26
+        @assert part1(readlines(open("test.txt")),10) == 26
     end
 
     open("input.txt") do f
         # read till end of file
         data = readlines(f)
-        println("Part 1 is $(part1(data))")
+        println("Part 1 is $(part1(data,2000000))")
     end
 
     with_logger(ConsoleLogger(stderr, Logging.Debug)) do
