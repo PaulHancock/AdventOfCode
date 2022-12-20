@@ -147,6 +147,15 @@ function couldbebeacon(sensors, distances, pos)
 end
 
 
+function nearestempty(sensors, distances, pos)
+    e = 1
+    for (s,d) in zip(sensors,distances)
+        e = max(e,d-dist(pos,s))
+    end
+    return e
+end
+
+
 function part1(data, y)
     (sensors, beacons, distances) = getsensors(data)
     println(sensors)
@@ -185,29 +194,50 @@ function part1(data, y)
     return no_beacons
 end
 
-function part2(data)
+function part2(data, smax)
+    (sensors, beacons, distances) = getsensors(data)
+    println(sensors)
+    println(beacons)
+    println(distances)
+    freq=0
+    for i in 0:smax
+        if mod(i,smax/100) ==0
+            print('.')
+        end
+        j = 0
+        while j <= smax
+            if couldbebeacon(sensors, distances, [i, j])
+                println("$(i), $(j)")
+                freq = i*4000000 + j
+                println(freq)
+                return freq
+            end
+            e = nearestempty(sensors, distances, [i,j])
+            j+= e
+        end
+    end
     return false
 end
 
 function main()
+    # with_logger(ConsoleLogger(stderr, Logging.Debug)) do
+    #     @assert part1(readlines(open("test.txt")),10) == 26
+    # end
+
+    # open("input.txt") do f
+    #     # read till end of file
+    #     data = readlines(f)
+    #     println("Part 1 is $(part1(data,2000000))")
+    # end
+
     with_logger(ConsoleLogger(stderr, Logging.Debug)) do
-        @assert part1(readlines(open("test.txt")),10) == 26
+        @assert part2(readlines(open("test.txt")),20) == 56000011
     end
 
     open("input.txt") do f
         # read till end of file
         data = readlines(f)
-        println("Part 1 is $(part1(data,2000000))")
-    end
-
-    with_logger(ConsoleLogger(stderr, Logging.Debug)) do
-        @assert part2(readlines(open("test.txt"))) == true
-    end
-
-    open("input.txt") do f
-        # read till end of file
-        data = readlines(f)
-        println("Part 2 is $(part2(data))")
+        println("Part 2 is $(part2(data,4000000))")
     end
 
 end
