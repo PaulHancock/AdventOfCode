@@ -334,9 +334,20 @@ How many units tall will the tower of rocks be after 2022 rocks have stopped fal
 =#
 
 using Logging
+shapes = ['-','+','j','i','s']
 
-function part1(data)
-    return false
+function part1(data, nshapes)
+    tower = [0,0,0,0,0,0,0]
+    instructions = data
+    nshapes = length(shapes)
+    ninstru = length(instructions)
+    this_instruction = 1
+    for i in 1:nshapes
+        shape = shapes[mod(i,nshapes)+1]
+        instruction = instructions[mod(i,ninstru)+1]
+        drop!(tower, shape, instruction)
+    end
+    return maximum(tower)
 end
 
 function part2(data)
@@ -345,7 +356,7 @@ end
 
 function main()
     with_logger(ConsoleLogger(stderr, Logging.Debug)) do
-        @assert part1(readlines(open("test.txt"))) == true
+        @assert part1(readlines(open("test.txt")),2022) == 3068
     end
 
     open("input.txt") do f
