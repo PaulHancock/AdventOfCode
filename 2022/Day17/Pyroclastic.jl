@@ -336,18 +336,24 @@ How many units tall will the tower of rocks be after 2022 rocks have stopped fal
 using Logging
 shapes = ['-','+','j','i','s']
 
+mutable struct Tower
+    top :: Int
+    width :: Int
+    pieces :: Array{Char}
+    positions :: Array{Int}
+end
+
 function part1(data, nshapes)
-    tower = [0,0,0,0,0,0,0]
+    tower = Tower(3, 7, [], [])
     instructions = data
     nshapes = length(shapes)
     ninstru = length(instructions)
-    this_instruction = 1
+    instruction = 1
     for i in 1:nshapes
         shape = shapes[mod(i,nshapes)+1]
-        instruction = instructions[mod(i,ninstru)+1]
-        drop!(tower, shape, instruction)
+        # drop the piece
     end
-    return maximum(tower)
+    return false
 end
 
 function part2(data)
