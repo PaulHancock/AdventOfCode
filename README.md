@@ -7,7 +7,7 @@ AoC so far:
 
 | Day              | P1         | P2         |
 | ---------------- | ---------- | ---------- |
-| [01](2023/Day01) | :question: | :question: |
+| [01](2023/Day01) | :star: | :star: |
 | 02               | :question: | :question: |
 | 03               | :question: | :question: |
 | 04               | :question: | :question: |
